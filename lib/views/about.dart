@@ -14,8 +14,6 @@ class About extends StatelessWidget {
       'Constantino, John David B.',
       'Campo, Charlie M.'
     ];
-    const String complianceNote =
-        'This project was for CCS 106 - Application Development and Emerging Technologies compliance purposes.';
 
     return Scaffold(
       appBar: AppBar(
@@ -46,11 +44,6 @@ class About extends StatelessWidget {
                 member,
                 style: const TextStyle(fontSize: 16),
               ),
-            const SizedBox(height: 16),
-            const Text(
-              complianceNote,
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),
