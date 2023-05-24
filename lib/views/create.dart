@@ -3,6 +3,7 @@ import 'package:external_path/external_path.dart';
 import 'dart:io';
 import 'package:logger/logger.dart';
 import 'package:enotes/theme_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Create extends StatefulWidget {
   final String? note;
@@ -85,7 +86,7 @@ class CreateState extends State<Create> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () =>
-                  _saveNoteToFile(context, widget.refreshHomeScreen),
+                  _checkAndSaveNote(context, widget.refreshHomeScreen),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFCC4F4F),
               ),
@@ -103,18 +104,47 @@ class CreateState extends State<Create> {
     );
   }
 
-  void _saveNoteToFile(
-      BuildContext context, RefreshCallback refreshHomeScreen) {
-    final note = _noteController.text.trim();
-    if (note.isNotEmpty) {
-      _writeNoteToFile(note);
-      refreshHomeScreen();
-      Navigator.pop(context);
+  void _checkAndSaveNote(
+      BuildContext context, RefreshCallback refreshHomeScreen) async {
+    final status = await Permission.storage.status;
+    if (status.isGranted) {
+      final note = _noteController.text.trim();
+      if (note.isNotEmpty) {
+        _writeNoteToFile(note);
+        refreshHomeScreen();
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Please enter a note.',
+              style: TextStyle(fontFamily: 'Roboto'),
+            ),
+          ),
+        );
+      }
+    } else if (status.isPermanentlyDenied) {
+      final result = await Permission.storage.request();
+      if (result.isGranted) {
+        _checkAndSaveNote(context, refreshHomeScreen);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Storage permission required to save the note.',
+              style: TextStyle(fontFamily: 'Roboto'),
+            ),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please enter a note.',
-                style: TextStyle(fontFamily: 'Roboto'))),
+          content: Text(
+            'Storage permission required to save the note.',
+            style: TextStyle(fontFamily: 'Roboto'),
+          ),
+        ),
       );
     }
   }
@@ -135,15 +165,21 @@ class CreateState extends State<Create> {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Note saved successfully.',
-                style: TextStyle(fontFamily: 'Roboto'))),
+          content: Text(
+            'Note saved successfully.',
+            style: TextStyle(fontFamily: 'Roboto'),
+          ),
+        ),
       );
       await file.writeAsString(note);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Failed to save note.',
-                style: TextStyle(fontFamily: 'Roboto'))),
+          content: Text(
+            'Failed to save note.',
+            style: TextStyle(fontFamily: 'Roboto'),
+          ),
+        ),
       );
       Logger().e(e);
     }

@@ -11,17 +11,11 @@ class About extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const String appName = 'eNotes';
-    const List<String> groupMembers = [
-      'Radam, Aron Jake S.',
-      'Ramones, Dwight Patrick G.',
-      'San Buenaventura III, Edwin J.',
-      'Lofranco. Kevin Christian A.',
-      'Constantino, John David B.',
-      'Campo, Charlie M.'
-    ];
+    const String description = 'A simple note-taking app.';
 
     return Scaffold(
       appBar: AppBar(
+        elevation: 0.0,
         title: const Text('About'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -46,15 +40,22 @@ class About extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Group Members:',
+              description,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            for (var member in groupMembers)
-              Text(
-                member,
-                style: const TextStyle(fontSize: 16),
+            const SizedBox(height: 16),
+            GestureDetector(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(width: 8),
+                  const Text(
+                    'This project is open source on GitHub',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
               ),
+            ),
           ],
         ),
       ),
