@@ -1,10 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:external_path/external_path.dart';
 import 'dart:io';
-
 import 'package:logger/logger.dart';
+import 'package:enotes/theme_handler.dart';
 
 class Create extends StatefulWidget {
   final String? note;
@@ -32,6 +30,7 @@ class CreateState extends State<Create> {
         _noteController.text = widget.note!;
       }
     }
+    ThemeHandler.getThemeData();
   }
 
   @override
@@ -45,7 +44,9 @@ class CreateState extends State<Create> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Note'),
+        title:
+            const Text('Create Note', style: TextStyle(fontFamily: 'Roboto')),
+        elevation: 0.0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -53,20 +54,23 @@ class CreateState extends State<Create> {
           children: [
             TextField(
               controller: _titleController,
+              style: const TextStyle(fontFamily: 'Roboto'),
               decoration: const InputDecoration(
-                hintText: 'Enter note title',
-              ),
+                  hintText: 'Enter note title',
+                  focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFCC4F4F)))),
             ),
             const SizedBox(height: 16.0),
             Expanded(
               child: SingleChildScrollView(
-                // Wrap _noteController with SingleChildScrollView
                 child: TextField(
                   controller: _noteController,
+                  style: const TextStyle(fontFamily: 'Roboto'),
                   maxLines: null,
                   decoration: const InputDecoration(
-                    hintText: 'Enter note description',
-                  ),
+                      hintText: 'Enter note description',
+                      focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFFCC4F4F)))),
                 ),
               ),
             ),
@@ -74,12 +78,13 @@ class CreateState extends State<Create> {
             ElevatedButton(
               onPressed: () => _saveNoteToFile(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFCC4F4F), // Background color
+                backgroundColor: const Color(0xFFCC4F4F),
               ),
               child: const Text(
                 'Save Note',
                 style: TextStyle(
-                  color: Colors.white, // Text color
+                  color: Colors.white,
+                  fontFamily: 'Roboto',
                 ),
               ),
             ),
@@ -97,7 +102,9 @@ class CreateState extends State<Create> {
       widget.refreshHomeScreen();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a note.')),
+        const SnackBar(
+            content: Text('Please enter a note.',
+                style: TextStyle(fontFamily: 'Roboto'))),
       );
     }
   }
@@ -117,12 +124,16 @@ class CreateState extends State<Create> {
 
     try {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Note saved successfully.')),
+        const SnackBar(
+            content: Text('Note saved successfully.',
+                style: TextStyle(fontFamily: 'Roboto'))),
       );
       await file.writeAsString(note);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save note.')),
+        const SnackBar(
+            content: Text('Failed to save note.',
+                style: TextStyle(fontFamily: 'Roboto'))),
       );
       Logger().e(e);
     }

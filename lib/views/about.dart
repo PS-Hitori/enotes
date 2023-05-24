@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:enotes/theme_handler.dart';
 
 class About extends StatelessWidget {
   const About({Key? key}) : super(key: key);
+
+  void initState() {
+    ThemeHandler.getThemeData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +35,9 @@ class About extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/icons/icon.png', // Replace with the actual path to your logo image
-              width: 100, // Adjust the width as needed
-              height: 100, // Adjust the height as needed
+              'assets/icons/logo.png',
+              width: 128,
+              height: 128,
             ),
             const SizedBox(height: 8),
             const Text(

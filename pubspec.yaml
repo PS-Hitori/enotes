@@ -14,6 +14,7 @@ dependencies:
   flutter_launcher_icons: "^0.13.1"
   permission_handler: ^10.2.0
   logger: ^1.1.0
+  shared_preferences: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -23,7 +24,32 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/icons/logo.png
     - assets/icons/icon.png
+  fonts:
+    - family: Roboto
+      fonts:
+      - asset: assets/fonts/Roboto-Regular.ttf
+      - asset: assets/fonts/Roboto-Bold.ttf
+      - asset: assets/fonts/Roboto-Italic.ttf
+        style: italic
+      - asset: assets/fonts/Roboto-BoldItalic.ttf
+        style: italic
+      - asset: assets/fonts/Roboto-Light.ttf
+        weight: 300
+      - asset: assets/fonts/Roboto-Medium.ttf
+        weight: 500
+      - asset: assets/fonts/Roboto-Thin.ttf
+      - asset: assets/fonts/Roboto-Black.ttf
+        weight: 900
+      - asset: assets/fonts/Roboto-LightItalic.ttf
+        style: italic
+      - asset: assets/fonts/Roboto-MediumItalic.ttf
+        style: italic
+      - asset: assets/fonts/Roboto-ThinItalic.ttf
+        style: italic
+      - asset: assets/fonts/Roboto-BlackItalic.ttf
+        style: italic
 
 flutter_launcher_icons:
   android: "launcher_icon"

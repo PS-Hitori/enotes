@@ -4,6 +4,23 @@ import 'package:enotes/views/about.dart';
 import 'package:external_path/external_path.dart';
 import 'dart:io';
 import 'package:logger/logger.dart';
+import 'package:path/path.dart' as path;
+import 'package:enotes/theme_handler.dart';
+
+class Note {
+  final String title;
+  final String description;
+
+  @override
+  String toString() {
+    return 'Note{title: $title, description: $description}';
+  }
+
+  Note({
+    required this.title,
+    required this.description,
+  });
+}
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -13,15 +30,28 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
-  List<String> _notes = [];
+  List<Note> _notes = [];
+  List<Note> _filteredNotes = [];
   final Logger logger = Logger();
   bool _refreshing = false;
+  bool _isDarkMode = false;
+  String _searchTerm = '';
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     logger.d('Initializing home screen');
     _loadNotesFromDirectory();
+    _loadDarkMode();
+    ThemeHandler.getThemeData();
+  }
+
+  Future<void> _loadDarkMode() async {
+    final isDarkMode = await ThemeHandler.getDarkMode();
+    setState(() {
+      _isDarkMode = isDarkMode;
+    });
   }
 
   @override
@@ -29,23 +59,77 @@ class HomeState extends State<Home> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text('eNotes'),
+        title: null,
+        elevation: 0.0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () {
-              _refreshNotes();
-            },
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: TextField(
+                  focusNode: _searchFocusNode,
+                  onChanged: (value) => _filterNotes(value),
+                  autofocus: false,
+                  cursorColor: const Color(0xFFCC4F4F),
+                  decoration: InputDecoration(
+                    hintText: 'Search your notes',
+                    filled: false,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(100.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(100.0),
+                      borderSide: const BorderSide(color: Color(0xFFCC4F4F)),
+                    ),
+                    prefixIcon:
+                        const Icon(Icons.search, color: Color(0xFFCC4F4F)),
+                  ),
+                ),
+              ),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.info),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const About()),
-              );
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: IconButton(
+              icon: Icon(
+                _isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
+                color: _isDarkMode ? Colors.white : Colors.black,
+              ),
+              onPressed: () {
+                final newMode = !_isDarkMode;
+                ThemeHandler.toggleDarkMode(newMode);
+                setState(() {
+                  _isDarkMode = newMode;
+                });
+              },
+            ),
+          ),
+          PopupMenuButton(
+            onSelected: (value) {
+              if (value == 'remove_all') {
+                _showDeleteAllConfirmation();
+              } else if (value == 'about') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const About()),
+                );
+              } else if (value == 'refresh') {
+                _refreshNotes();
+              }
             },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem(value: 'refresh', child: Text('Refresh')),
+              const PopupMenuItem(
+                value: 'remove_all',
+                child: Text('Remove All'),
+              ),
+              const PopupMenuItem(
+                value: 'about',
+                child: Text('About'),
+              ),
+            ],
           ),
         ],
       ),
@@ -62,6 +146,7 @@ class HomeState extends State<Home> {
           });
         },
         backgroundColor: const Color(0xFFCC4F4F),
+        shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -72,15 +157,15 @@ class HomeState extends State<Home> {
         ? const Center(
             child: Text(
               'No note entries',
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: 18, fontFamily: 'Roboto'),
             ),
           )
         : ListView.builder(
-            itemCount: _notes.length,
+            itemCount: _filteredNotes.length,
             itemBuilder: (context, index) {
-              final note = _notes[index];
+              final note = _filteredNotes[index];
               return Dismissible(
-                key: Key(note),
+                key: Key(note.title),
                 direction: DismissDirection.endToStart,
                 background: Container(
                   color: Colors.red,
@@ -96,20 +181,28 @@ class HomeState extends State<Home> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: const Text('Delete Note'),
+                        title: const Text('Delete Note',
+                            style: TextStyle(fontFamily: 'Roboto')),
                         content: const Text(
-                            'Are you sure you want to delete this note?'),
+                            'Are you sure you want to delete this note?',
+                            style: TextStyle(fontFamily: 'Roboto')),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('Cancel'),
+                            style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFFCC4F4F)),
+                            child: const Text('Cancel',
+                                style: TextStyle(fontFamily: 'Roboto')),
                           ),
                           TextButton(
                             onPressed: () {
-                              _deleteNote(note);
+                              _deleteNote(note.title);
                               Navigator.of(context).pop(true);
                             },
-                            child: const Text('Delete'),
+                            style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFFCC4F4F)),
+                            child: const Text('Delete',
+                                style: TextStyle(fontFamily: 'Roboto')),
                           ),
                         ],
                       );
@@ -123,13 +216,44 @@ class HomeState extends State<Home> {
                     ),
                   );
                 },
-                child: ListTile(
-                  title: Text(note),
-                  leading: const Icon(Icons.note_alt_rounded),
+                child: Card(
+                  elevation: 0.0,
+                  color: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    side: const BorderSide(color: Colors.grey, width: 0.5),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      title: Text(note.title,
+                          style: const TextStyle(fontFamily: 'Roboto')),
+                      subtitle: Text(note.description,
+                          style: const TextStyle(fontFamily: 'Roboto')),
+                    ),
+                  ),
                 ),
               );
             },
           );
+  }
+
+  void _filterNotes(String searchTerm) {
+    setState(() {
+      _searchTerm = searchTerm;
+      if (_searchTerm.isEmpty) {
+        _filteredNotes = List.from(_notes);
+      } else {
+        _filteredNotes = _notes.where((note) {
+          final titleMatch =
+              note.title.toLowerCase().contains(_searchTerm.toLowerCase());
+          final descriptionMatch = note.description
+              .toLowerCase()
+              .contains(_searchTerm.toLowerCase());
+          return titleMatch || descriptionMatch;
+        }).toList();
+      }
+    });
   }
 
   Future<void> _loadNotesFromDirectory() async {
@@ -148,16 +272,35 @@ class HomeState extends State<Home> {
           .where((file) => file.path.endsWith('.txt'))
           .toList();
 
+      final List<Note> loadedNotes = [];
+      for (final noteFile in noteFiles) {
+        final notePath = noteFile.path;
+        final noteTitle = path.basenameWithoutExtension(notePath);
+        final noteContent = File(notePath).readAsStringSync();
+        final noteDescription = _extractDescriptionFromContent(noteContent);
+        loadedNotes.add(Note(
+          title: noteTitle,
+          description: noteDescription,
+        ));
+      }
+
       setState(() {
-        _notes = noteFiles
-            .map((noteFile) => File(noteFile.path).readAsStringSync())
-            .toList();
+        _notes = loadedNotes;
+        _filteredNotes = loadedNotes;
       });
 
       logger.d('Loaded notes: $_notes');
     } catch (e) {
       logger.d('Error loading notes: $e');
     }
+  }
+
+  String _extractDescriptionFromContent(String content) {
+    final lines = content.split('\n');
+    if (lines.isNotEmpty) {
+      return lines.first.trim();
+    }
+    return '';
   }
 
   Future<void> _refreshNotes() async {
@@ -172,35 +315,95 @@ class HomeState extends State<Home> {
     });
   }
 
-  void _deleteNote(String note) async {
+  void _deleteNote(String noteTitle) async {
     setState(() {
-      _notes.remove(note);
+      _notes.removeWhere((note) => note.title == noteTitle);
+      _filteredNotes.removeWhere((note) => note.title == noteTitle);
     });
 
-    final externalPath = await ExternalPath.getExternalStoragePublicDirectory(
-      ExternalPath.DIRECTORY_DOCUMENTS,
-    );
-    final notesDir = Directory('$externalPath/eNotes/Notes');
-    final noteFile = File('${notesDir.path}/$note.txt');
-
-    // debugging purposes only
-    logger.d(notesDir);
-    logger.d(noteFile);
-
-    if (!notesDir.existsSync()) {
-      logger.d('Notes directory does not exist');
-      return;
-    }
-
     try {
+      final externalPath = await ExternalPath.getExternalStoragePublicDirectory(
+        ExternalPath.DIRECTORY_DOCUMENTS,
+      );
+
+      final noteFile = File('$externalPath/eNotes/Notes/$noteTitle.txt');
+
       if (noteFile.existsSync()) {
         noteFile.deleteSync();
-        logger.d('Note deleted: $note');
+        logger.d('Note deleted: $noteTitle');
       } else {
-        logger.d('Note file does not exist: $note');
+        logger.d('Note file does not exist: $noteTitle');
       }
     } catch (e) {
       logger.e('Error deleting note: $e');
     }
+  }
+
+  void _showDeleteAllConfirmation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Remove All Notes'),
+          content: const Text('Are you sure you want to remove all notes?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFFCC4F4F),
+              ),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteAllNotes();
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFFCC4F4F),
+              ),
+              child: const Text('Remove All'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteAllNotes() async {
+    final externalPath = await ExternalPath.getExternalStoragePublicDirectory(
+      ExternalPath.DIRECTORY_DOCUMENTS,
+    );
+
+    final notesDir = Directory('$externalPath/eNotes/Notes');
+
+    if (notesDir.existsSync()) {
+      final noteFiles = notesDir
+          .listSync()
+          .where((file) => file.path.endsWith('.txt'))
+          .toList();
+
+      if (noteFiles.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('The directory is empty, nothing to remove.'),
+          ),
+        );
+        return;
+      }
+
+      for (final file in noteFiles) {
+        file.deleteSync();
+        logger.d('All notes removed');
+      }
+    }
+
+    setState(() {
+      _notes.clear();
+      _filteredNotes.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('All notes removed.')),
+      );
+    });
   }
 }
