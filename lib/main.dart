@@ -1,5 +1,5 @@
+import 'package:enotes/views/splash.dart';
 import 'package:flutter/material.dart';
-import 'package:enotes/views/home.dart';
 
 void main() {
   runApp(const MainApp());
@@ -15,7 +15,7 @@ class MainApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: const Home(), // Home widget
+      home: SplashPage(), // Splash widget
     );
   }
 }

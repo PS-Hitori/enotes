@@ -26,8 +26,6 @@ class HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isNoteListEmpty = _notes.isEmpty;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -35,14 +33,10 @@ class HomeState extends State<Home> {
         title: const Text('eNotes'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             onPressed: () {
               _refreshNotes();
             },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_forever),
-            onPressed: isNoteListEmpty ? null : _deleteAllNotes,
           ),
           IconButton(
             icon: const Icon(Icons.info),
@@ -112,7 +106,7 @@ class HomeState extends State<Home> {
                           ),
                           TextButton(
                             onPressed: () {
-                              _delete(note);
+                              _deleteNote(note);
                               Navigator.of(context).pop(true);
                             },
                             child: const Text('Delete'),
@@ -141,7 +135,8 @@ class HomeState extends State<Home> {
   Future<void> _loadNotesFromDirectory() async {
     try {
       final externalPath = await ExternalPath.getExternalStoragePublicDirectory(
-          ExternalPath.DIRECTORY_DOCUMENTS);
+        ExternalPath.DIRECTORY_DOCUMENTS,
+      );
       final notesDir = Directory('$externalPath/eNotes/Notes');
       logger.d('Notes directory: $notesDir');
       if (!notesDir.existsSync()) {
@@ -177,15 +172,20 @@ class HomeState extends State<Home> {
     });
   }
 
-  void _delete(String note) {
+  void _deleteNote(String note) async {
     setState(() {
       _notes.remove(note);
     });
 
-    final externalPath = ExternalPath.getExternalStoragePublicDirectory(
-        ExternalPath.DIRECTORY_DOCUMENTS);
+    final externalPath = await ExternalPath.getExternalStoragePublicDirectory(
+      ExternalPath.DIRECTORY_DOCUMENTS,
+    );
     final notesDir = Directory('$externalPath/eNotes/Notes');
     final noteFile = File('${notesDir.path}/$note.txt');
+
+    // debugging purposes only
+    logger.d(notesDir);
+    logger.d(noteFile);
 
     if (!notesDir.existsSync()) {
       logger.d('Notes directory does not exist');
@@ -194,59 +194,13 @@ class HomeState extends State<Home> {
 
     try {
       if (noteFile.existsSync()) {
-        noteFile.deleteSync(recursive: true);
+        noteFile.deleteSync();
+        logger.d('Note deleted: $note');
+      } else {
+        logger.d('Note file does not exist: $note');
       }
     } catch (e) {
-      logger.e('Error deleting file: $e');
-    }
-  }
-
-  void _deleteAllNotes() async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete All Notes'),
-          content: const Text('Are you sure you want to delete all notes?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _deleteAllNotesConfirmed();
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _deleteAllNotesConfirmed() async {
-    setState(() {
-      _notes.clear();
-    });
-
-    final externalPath = await ExternalPath.getExternalStoragePublicDirectory(
-        ExternalPath.DIRECTORY_DOCUMENTS);
-    final notesDir = Directory('$externalPath/eNotes/Notes');
-
-    if (!notesDir.existsSync()) {
-      logger.d('Notes directory does not exist');
-      return;
-    }
-
-    try {
-      notesDir.deleteSync(recursive: true);
-      notesDir.createSync(recursive: true);
-    } catch (e) {
-      logger.e('Error deleting notes: $e');
+      logger.e('Error deleting note: $e');
     }
   }
 }

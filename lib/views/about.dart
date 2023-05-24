@@ -29,6 +29,12 @@ class About extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Image.asset(
+              'assets/icons/icon.png', // Replace with the actual path to your logo image
+              width: 100, // Adjust the width as needed
+              height: 100, // Adjust the height as needed
+            ),
+            const SizedBox(height: 8),
             const Text(
               appName,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
