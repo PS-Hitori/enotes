@@ -64,13 +64,7 @@ class _MainAppState extends State<MainApp> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        openAppSettings().then((opened) {
-                          if (opened) {
-                            setState(() {
-                              _permissionStatus = requestPermissions();
-                            });
-                          }
-                        });
+                        requestPermissions();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFCC4F4F),
@@ -78,7 +72,7 @@ class _MainAppState extends State<MainApp> {
                           borderRadius: BorderRadius.circular(5.0),
                         ),
                       ),
-                      child: const Text('Go to Settings'),
+                      child: const Text('Enable Permission'),
                     ),
                   ],
                 ),
