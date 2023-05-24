@@ -1,3 +1,3 @@
 # enotes
 
-A new Flutter project.
+A digital diary made using Flutter Framework.
