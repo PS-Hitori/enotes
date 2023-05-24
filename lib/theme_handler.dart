@@ -1,6 +1,6 @@
+import 'package:enotes/views/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:enotes/views/home.dart';
 
 class ThemeHandler {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -20,6 +20,7 @@ class ThemeHandler {
       ),
       bodyMedium: TextStyle(
         color: Colors.black,
+        fontSize: 16,
         fontFamily: 'Roboto',
       ),
     ),
@@ -43,6 +44,7 @@ class ThemeHandler {
       ),
       bodyMedium: TextStyle(
         color: Colors.white,
+        fontSize: 16,
         fontFamily: 'Roboto',
       ),
     ),
@@ -56,18 +58,18 @@ class ThemeHandler {
     final prefs = await SharedPreferences.getInstance();
     final isDarkMode = prefs.getBool('isDarkMode') ?? false;
     final systemBrightness = WidgetsBinding.instance.window.platformBrightness;
-    final isDeviceInLightMode = systemBrightness == Brightness.light;
-    final useDarkMode = isDarkMode && !isDeviceInLightMode;
+    final isDeviceInDarkMode = systemBrightness == Brightness.dark;
 
+    final useDarkMode = isDarkMode && isDeviceInDarkMode;
     _applyTheme(useDarkMode);
   }
 
-  static ThemeData getThemeData() {
+  static Future<ThemeData> getThemeData() async {
     final brightness = WidgetsBinding.instance.window.platformBrightness;
-    final isDarkMode = brightness == Brightness.dark;
-    final isDeviceInLightMode = brightness == Brightness.light;
-    final setApplicationTheme = isDarkMode && !isDeviceInLightMode;
+    final isDeviceInDarkMode = brightness == Brightness.dark;
+    final isDarkMode = await getDarkMode();
 
+    final setApplicationTheme = isDarkMode && isDeviceInDarkMode;
     return _buildThemeData(setApplicationTheme);
   }
 
@@ -110,7 +112,7 @@ class ThemeHandler {
     runApp(
       MaterialApp(
         theme: newTheme,
-        home: const Home(),
+        home: SplashPage(),
       ),
     );
   }

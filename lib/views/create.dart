@@ -14,6 +14,8 @@ class Create extends StatefulWidget {
   CreateState createState() => CreateState();
 }
 
+typedef RefreshCallback = void Function();
+
 class CreateState extends State<Create> {
   final _titleController = TextEditingController();
   final _noteController = TextEditingController();
@@ -54,7 +56,10 @@ class CreateState extends State<Create> {
           children: [
             TextField(
               controller: _titleController,
-              style: const TextStyle(fontFamily: 'Roboto'),
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    fontFamily: 'Roboto',
+                  ),
               decoration: const InputDecoration(
                   hintText: 'Enter note title',
                   focusedBorder: UnderlineInputBorder(
@@ -65,7 +70,10 @@ class CreateState extends State<Create> {
               child: SingleChildScrollView(
                 child: TextField(
                   controller: _noteController,
-                  style: const TextStyle(fontFamily: 'Roboto'),
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: Theme.of(context).textTheme.bodyMedium!.color,
+                        fontFamily: 'Roboto',
+                      ),
                   maxLines: null,
                   decoration: const InputDecoration(
                       hintText: 'Enter note description',
@@ -76,7 +84,8 @@ class CreateState extends State<Create> {
             ),
             const SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: () => _saveNoteToFile(context),
+              onPressed: () =>
+                  _saveNoteToFile(context, widget.refreshHomeScreen),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFCC4F4F),
               ),
@@ -94,12 +103,13 @@ class CreateState extends State<Create> {
     );
   }
 
-  void _saveNoteToFile(BuildContext context) {
+  void _saveNoteToFile(
+      BuildContext context, RefreshCallback refreshHomeScreen) {
     final note = _noteController.text.trim();
     if (note.isNotEmpty) {
       _writeNoteToFile(note);
+      refreshHomeScreen();
       Navigator.pop(context);
-      widget.refreshHomeScreen();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

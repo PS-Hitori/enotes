@@ -26,8 +26,10 @@ class _SplashPageState extends State<SplashPage> {
     });
 
     await Future.delayed(const Duration(seconds: 5));
-
-    MaterialPageRoute(builder: (context) => const Home());
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const Home()),
+    );
   }
 
   @override

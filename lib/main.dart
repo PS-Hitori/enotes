@@ -6,22 +6,37 @@ void main() {
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({Key? key}) : super(key: key);
 
   @override
+  _MainAppState createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  late ThemeData _themeData;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeTheme();
+  }
+
+  Future<void> initializeTheme() async {
+    _themeData = await ThemeHandler.getThemeData();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<void>(
-      future: ThemeHandler.initializeTheme(), // Initialize the theme
+    return FutureBuilder<ThemeData>(
+      future: ThemeHandler.getThemeData(),
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-        // Check the theme initialization status
         if (snapshot.connectionState == ConnectionState.done) {
           return MaterialApp(
-            theme: ThemeHandler.getThemeData(), // Get the theme data
-            home: SplashPage(), // Splash widget
+            home: SplashPage(),
+            theme: _themeData,
           );
         } else {
-          // Show a loading indicator while initializing the theme
           return const CircularProgressIndicator();
         }
       },

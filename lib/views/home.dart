@@ -56,98 +56,127 @@ class HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: null,
-        elevation: 0.0,
-        actions: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: TextField(
-                  focusNode: _searchFocusNode,
-                  onChanged: (value) => _filterNotes(value),
-                  autofocus: false,
-                  cursorColor: const Color(0xFFCC4F4F),
-                  decoration: InputDecoration(
-                    hintText: 'Search your notes',
-                    filled: false,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(100.0),
-                      borderSide: BorderSide.none,
+    return GestureDetector(
+      onTap: () {
+        if (_searchFocusNode.hasFocus) {
+          _searchFocusNode.unfocus();
+        }
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: null,
+          elevation: 0.0,
+          actions: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextField(
+                    focusNode: _searchFocusNode,
+                    onChanged: (value) => _filterNotes(value),
+                    autofocus: false,
+                    cursorColor: const Color(0xFFCC4F4F),
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color: Theme.of(context).textTheme.bodyMedium!.color,
+                          fontFamily: 'Roboto',
+                        ),
+                    decoration: InputDecoration(
+                      hintText: 'Search your notes',
+                      filled: false,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(100.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(100.0),
+                        borderSide: const BorderSide(color: Color(0xFFCC4F4F)),
+                      ),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Color(0xFFCC4F4F)),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(100.0),
-                      borderSide: const BorderSide(color: Color(0xFFCC4F4F)),
-                    ),
-                    prefixIcon:
-                        const Icon(Icons.search, color: Color(0xFFCC4F4F)),
                   ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: IconButton(
-              icon: Icon(
-                _isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
-                color: _isDarkMode ? Colors.white : Colors.black,
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: IconButton(
+                icon: Icon(
+                  _isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
+                  color: _isDarkMode ? Colors.white : Colors.black,
+                ),
+                onPressed: () {
+                  final newMode = !_isDarkMode;
+                  ThemeHandler.toggleDarkMode(newMode);
+                  setState(() {
+                    _isDarkMode = newMode;
+                  });
+                },
               ),
-              onPressed: () {
-                final newMode = !_isDarkMode;
-                ThemeHandler.toggleDarkMode(newMode);
-                setState(() {
-                  _isDarkMode = newMode;
-                });
+            ),
+            PopupMenuButton(
+              onSelected: (value) {
+                if (value == 'remove_all') {
+                  _showDeleteAllConfirmation();
+                } else if (value == 'about') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const About()),
+                  );
+                } else if (value == 'refresh') {
+                  _refreshNotes();
+                }
               },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem(
+                  value: 'refresh',
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      color: _isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    child: const Text('Refresh'),
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'remove_all',
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      color: _isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    child: const Text('Remove All'),
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'about',
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      color: _isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    child: const Text('About'),
+                  ),
+                ),
+              ],
             ),
-          ),
-          PopupMenuButton(
-            onSelected: (value) {
-              if (value == 'remove_all') {
-                _showDeleteAllConfirmation();
-              } else if (value == 'about') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const About()),
-                );
-              } else if (value == 'refresh') {
-                _refreshNotes();
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem(value: 'refresh', child: Text('Refresh')),
-              const PopupMenuItem(
-                value: 'remove_all',
-                child: Text('Remove All'),
+          ],
+        ),
+        body: _buildNoteList(),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Create(refreshHomeScreen: _refreshNotes),
               ),
-              const PopupMenuItem(
-                value: 'about',
-                child: Text('About'),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: _buildNoteList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Create(refreshHomeScreen: _refreshNotes),
-            ),
-          ).then((_) {
-            _refreshNotes();
-          });
-        },
-        backgroundColor: const Color(0xFFCC4F4F),
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white),
+            ).then((_) {
+              _refreshNotes();
+            });
+          },
+          backgroundColor: const Color(0xFFCC4F4F),
+          shape: const CircleBorder(),
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }
@@ -183,9 +212,12 @@ class HomeState extends State<Home> {
                       return AlertDialog(
                         title: const Text('Delete Note',
                             style: TextStyle(fontFamily: 'Roboto')),
-                        content: const Text(
+                        content: Text(
                             'Are you sure you want to delete this note?',
-                            style: TextStyle(fontFamily: 'Roboto')),
+                            style: TextStyle(
+                                color:
+                                    _isDarkMode ? Colors.white : Colors.black,
+                                fontFamily: 'Roboto')),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
@@ -226,10 +258,21 @@ class HomeState extends State<Home> {
                   child: Material(
                     color: Colors.transparent,
                     child: ListTile(
-                      title: Text(note.title,
-                          style: const TextStyle(fontFamily: 'Roboto')),
+                      title: Text(
+                        note.title,
+                        style: TextStyle(
+                          color: _isDarkMode ? Colors.white : Colors.black,
+                          fontFamily: 'Roboto',
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       subtitle: Text(note.description,
-                          style: const TextStyle(fontFamily: 'Roboto')),
+                          style: TextStyle(
+                            color: _isDarkMode ? Colors.white : Colors.black,
+                            fontFamily: 'Roboto',
+                            fontSize: 14.0,
+                          )),
                     ),
                   ),
                 ),
@@ -330,6 +373,11 @@ class HomeState extends State<Home> {
 
       if (noteFile.existsSync()) {
         noteFile.deleteSync();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Note deleted'),
+          ),
+        );
         logger.d('Note deleted: $noteTitle');
       } else {
         logger.d('Note file does not exist: $noteTitle');
@@ -345,7 +393,10 @@ class HomeState extends State<Home> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Remove All Notes'),
-          content: const Text('Are you sure you want to remove all notes?'),
+          content: Text('Are you sure you want to remove all notes?',
+              style: TextStyle(
+                  color: _isDarkMode ? Colors.white : Colors.black,
+                  fontFamily: 'Roboto')),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
