@@ -1,6 +1,6 @@
 # eNotes
 
-eNotes is a digital diary application built using the Flutter framework.
+eNotes is a note-taking application built using the Flutter framework.
 
 **Key Features**
 
