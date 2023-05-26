@@ -254,47 +254,53 @@ class CreateState extends State<Create> {
   void _showOverwriteDialog(BuildContext context, String title, String note) {
     showDialog(
       context: context,
+      barrierDismissible: false, // Prevents closing on outside tap
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Note Already Exists',
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: Theme.of(context).textTheme.bodyMedium!.color,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          content: Text(
-            'A note with the same title already exists. Do you want to overwrite it?',
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: Theme.of(context).textTheme.bodyMedium!.color,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.normal,
-                ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _saveNoteToFile(title, note);
-              },
-              child: const Text(
-                'Overwrite',
-                style:
-                    TextStyle(fontFamily: 'Roboto', color: Color(0xFFCC4F4F)),
-              ),
+        return WillPopScope(
+          onWillPop: () async {
+            return false; // Disable back button press
+          },
+          child: AlertDialog(
+            title: Text(
+              'Note Already Exists',
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'Cancel',
-                style:
-                    TextStyle(fontFamily: 'Roboto', color: Color(0xFFCC4F4F)),
-              ),
+            content: Text(
+              'A note with the same title already exists. Do you want to overwrite it?',
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.normal,
+                  ),
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _saveNoteToFile(title, note);
+                },
+                child: const Text(
+                  'Overwrite',
+                  style:
+                      TextStyle(fontFamily: 'Roboto', color: Color(0xFFCC4F4F)),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'Cancel',
+                  style:
+                      TextStyle(fontFamily: 'Roboto', color: Color(0xFFCC4F4F)),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
