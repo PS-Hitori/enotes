@@ -42,20 +42,13 @@ class About extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               description,
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
             ),
             const SizedBox(height: 16),
-            GestureDetector(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  SizedBox(width: 8),
-                  Text(
-                    'This project is open source on GitHub',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300),
-                  ),
-                ],
-              ),
+            const Text(
+              'This project is open source on GitHub',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300),
             ),
           ],
         ),
