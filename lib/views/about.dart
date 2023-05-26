@@ -11,7 +11,8 @@ class About extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const String appName = 'eNotes';
-    const String description = 'A simple note-taking app.';
+    const String description =
+        'eNotes is a note-taking application built using the Flutter framework.';
 
     return Scaffold(
       appBar: AppBar(
@@ -41,17 +42,17 @@ class About extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               description,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
             ),
             const SizedBox(height: 16),
             GestureDetector(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(width: 8),
-                  const Text(
+                children: const [
+                  SizedBox(width: 8),
+                  Text(
                     'This project is open source on GitHub',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300),
                   ),
                 ],
               ),

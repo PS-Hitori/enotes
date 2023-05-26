@@ -7,8 +7,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 class Create extends StatefulWidget {
   final String? note;
-  final VoidCallback refreshHomeScreen;
-  const Create({Key? key, this.note, required this.refreshHomeScreen})
+  final void Function() refreshNotes;
+  const Create({Key? key, this.note, required this.refreshNotes})
       : super(key: key);
 
   @override
@@ -45,16 +45,21 @@ class CreateState extends State<Create> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title:
-            const Text('Create Note', style: TextStyle(fontFamily: 'Roboto')),
-        elevation: 0.0,
-      ),
-      body: Padding(
+    return Dialog(
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const Text(
+              'Add New Note',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             TextField(
               controller: _titleController,
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
@@ -62,9 +67,13 @@ class CreateState extends State<Create> {
                     fontFamily: 'Roboto',
                   ),
               decoration: const InputDecoration(
-                  hintText: 'Enter note title',
-                  focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFFCC4F4F)))),
+                hintText: 'Title',
+                hintStyle:
+                    TextStyle(fontWeight: FontWeight.normal, fontSize: 16),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFFCC4F4F)),
+                ),
+              ),
             ),
             const SizedBox(height: 16.0),
             Expanded(
@@ -77,16 +86,19 @@ class CreateState extends State<Create> {
                       ),
                   maxLines: null,
                   decoration: const InputDecoration(
-                      hintText: 'Enter note description',
-                      focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFCC4F4F)))),
+                    hintText: 'Content',
+                    hintStyle:
+                        TextStyle(fontWeight: FontWeight.normal, fontSize: 16),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFCC4F4F)),
+                    ),
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: () =>
-                  _checkAndSaveNote(context, widget.refreshHomeScreen),
+              onPressed: () => _checkAndSaveNote(context, widget.refreshNotes),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFCC4F4F),
               ),
@@ -105,14 +117,19 @@ class CreateState extends State<Create> {
   }
 
   void _checkAndSaveNote(
-      BuildContext context, RefreshCallback refreshHomeScreen) async {
+    BuildContext context,
+    RefreshCallback refreshHomeScreen,
+  ) async {
     final status = await Permission.storage.status;
     if (status.isGranted) {
       final note = _noteController.text.trim();
+      final title = _titleController.text.trim();
       if (note.isNotEmpty) {
-        _writeNoteToFile(note);
-        refreshHomeScreen();
-        Navigator.pop(context);
+        if (await _isNoteTitleExists(title)) {
+          _showOverwriteDialog(context, title, note);
+        } else {
+          _saveNoteToFile(title, note);
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -146,6 +163,55 @@ class CreateState extends State<Create> {
           ),
         ),
       );
+    }
+  }
+
+  Future<bool> _isNoteTitleExists(String title) async {
+    final directory = await ExternalPath.getExternalStoragePublicDirectory(
+      ExternalPath.DIRECTORY_DOCUMENTS,
+    );
+    final notesDirectory = Directory('$directory/eNotes/Notes');
+    if (await notesDirectory.exists()) {
+      final file = File('${notesDirectory.path}/$title.txt');
+      return await file.exists();
+    }
+    return false;
+  }
+
+  Future<void> _saveNoteToFile(String title, String note) async {
+    final directory = await ExternalPath.getExternalStoragePublicDirectory(
+      ExternalPath.DIRECTORY_DOCUMENTS,
+    );
+    final notesDirectory = Directory('$directory/eNotes/Notes');
+    if (!await notesDirectory.exists()) {
+      await notesDirectory.create(recursive: true);
+    }
+
+    final fileName = '$title.txt';
+    final file = File('${notesDirectory.path}/$fileName');
+
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Note saved successfully.',
+            style: TextStyle(fontFamily: 'Roboto'),
+          ),
+        ),
+      );
+      await file.writeAsString(note);
+      widget.refreshNotes();
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Failed to save note.',
+            style: TextStyle(fontFamily: 'Roboto'),
+          ),
+        ),
+      );
+      Logger().e(e);
     }
   }
 
@@ -183,5 +249,54 @@ class CreateState extends State<Create> {
       );
       Logger().e(e);
     }
+  }
+
+  void _showOverwriteDialog(BuildContext context, String title, String note) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Note Already Exists',
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          content: Text(
+            'A note with the same title already exists. Do you want to overwrite it?',
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.normal,
+                ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _saveNoteToFile(title, note);
+              },
+              child: const Text(
+                'Overwrite',
+                style:
+                    TextStyle(fontFamily: 'Roboto', color: Color(0xFFCC4F4F)),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Cancel',
+                style:
+                    TextStyle(fontFamily: 'Roboto', color: Color(0xFFCC4F4F)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

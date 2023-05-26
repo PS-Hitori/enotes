@@ -10,6 +10,7 @@ import 'package:enotes/theme_handler.dart';
 class Note {
   final String title;
   final String description;
+  final DateTime creationTime;
 
   @override
   String toString() {
@@ -19,6 +20,7 @@ class Note {
   Note({
     required this.title,
     required this.description,
+    required this.creationTime,
   });
 }
 
@@ -33,7 +35,6 @@ class HomeState extends State<Home> {
   List<Note> _notes = [];
   List<Note> _filteredNotes = [];
   final Logger logger = Logger();
-  bool _refreshing = false;
   bool _isDarkMode = false;
   String _searchTerm = '';
   final FocusNode _searchFocusNode = FocusNode();
@@ -126,7 +127,7 @@ class HomeState extends State<Home> {
                     MaterialPageRoute(builder: (context) => const About()),
                   );
                 } else if (value == 'refresh') {
-                  _refreshNotes();
+                  _loadNotesFromDirectory();
                 }
               },
               itemBuilder: (BuildContext context) => [
@@ -145,7 +146,7 @@ class HomeState extends State<Home> {
                     style: TextStyle(
                       color: _isDarkMode ? Colors.white : Colors.black,
                     ),
-                    child: const Text('Remove All'),
+                    child: const Text('Empty Notes'),
                   ),
                 ),
                 PopupMenuItem(
@@ -163,19 +164,10 @@ class HomeState extends State<Home> {
         ),
         body: _buildNoteList(),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Create(refreshHomeScreen: _refreshNotes),
-              ),
-            ).then((_) {
-              _refreshNotes();
-            });
-          },
+          onPressed: _showCreateNotePopup,
           backgroundColor: const Color(0xFFCC4F4F),
           shape: const CircleBorder(),
-          child: const Icon(Icons.add, color: Colors.white),
+          child: const Icon(Icons.create, color: Colors.white),
         ),
       ),
     );
@@ -183,26 +175,32 @@ class HomeState extends State<Home> {
 
   Widget _buildNoteList() {
     return _notes.isEmpty
-        ? const Center(
-            child: Text(
-              'No note entries',
-              style: TextStyle(fontSize: 18, fontFamily: 'Roboto'),
-            ),
-          )
+        ? Center(
+            child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.note_rounded,
+                  size: 80, color: _isDarkMode ? Colors.white : Colors.black),
+              const SizedBox(height: 10),
+              Text('You have no notes yet.',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Roboto',
+                      color: _isDarkMode ? Colors.white : Colors.black))
+            ],
+          ))
         : ListView.builder(
             itemCount: _filteredNotes.length,
             itemBuilder: (context, index) {
               final note = _filteredNotes[index];
               return Dismissible(
                 key: Key(note.title),
-                direction: DismissDirection.endToStart,
+                direction: DismissDirection.horizontal,
                 background: Container(
-                  color: Colors.red,
-                  alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: const Icon(
+                  child: Icon(
                     Icons.delete,
-                    color: Colors.white,
+                    color: _isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
                 confirmDismiss: (direction) async {
@@ -321,12 +319,22 @@ class HomeState extends State<Home> {
         final noteTitle = path.basenameWithoutExtension(notePath);
         final noteContent = File(notePath).readAsStringSync();
         final noteDescription = _extractDescriptionFromContent(noteContent);
+
+        final FileStat noteStat = noteFile.statSync();
+        final noteCreationTime = noteStat.changed;
+
         loadedNotes.add(Note(
           title: noteTitle,
           description: noteDescription,
+          creationTime: noteCreationTime,
         ));
-      }
 
+        int compareByCreationTime(Note note1, Note note2) {
+          return note2.creationTime.compareTo(note1.creationTime);
+        }
+
+        loadedNotes.sort(compareByCreationTime);
+      }
       setState(() {
         _notes = loadedNotes;
         _filteredNotes = loadedNotes;
@@ -344,18 +352,6 @@ class HomeState extends State<Home> {
       return lines.first.trim();
     }
     return '';
-  }
-
-  Future<void> _refreshNotes() async {
-    setState(() {
-      _refreshing = true;
-    });
-
-    await _loadNotesFromDirectory();
-
-    setState(() {
-      _refreshing = false;
-    });
   }
 
   void _deleteNote(String noteTitle) async {
@@ -392,8 +388,9 @@ class HomeState extends State<Home> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Remove All Notes'),
-          content: Text('Are you sure you want to remove all notes?',
+          title: const Text('Empty Notes?'),
+          content: Text(
+              'All notes will be permanently deleted. This action cannot be undone.',
               style: TextStyle(
                   color: _isDarkMode ? Colors.white : Colors.black,
                   fontFamily: 'Roboto')),
@@ -455,6 +452,19 @@ class HomeState extends State<Home> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('All notes removed.')),
       );
+    });
+  }
+
+  void _showCreateNotePopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Create(
+          refreshNotes: _loadNotesFromDirectory,
+        );
+      },
+    ).then((_) {
+      _loadNotesFromDirectory();
     });
   }
 }
