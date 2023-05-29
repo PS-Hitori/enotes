@@ -5,16 +5,17 @@ eNotes is a note-taking application built using the Flutter framework.
 **Key Features**
 
 - **Search Entries**: Quickly find specific entries using the search functionality. Effortlessly locate your notes by keywords or phrases, making it easier to access the information you need.
-- **Light and Dark Them**e: Customize your app's appearance with the ability to switch between light and dark themes. Choose the mode that suits your preferences and create a comfortable reading experience.
+- **Light and Dark Theme**: Customize your app's appearance with the ability to switch between light and dark themes. Choose the mode that suits your preferences and create a comfortable reading experience.
+- **Manage Notes**: Manage each notes by updating or deleting on the go.
 
 # Overview
-![Splash Screen](https://imgur.com/6xRe1Oa.jpg)
+![Splash Screen](https://imgur.com/mnOITy3.png)
 
-![Home Screen](https://imgur.com/GK37A5Z.jpg)
+![Home Screen](https://imgur.com/hpn9Bgl.png)
 
-![Add Note Dialog](https://i.imgur.com/KYTDbmP.jpg)
+![Add Note Dialog](https://imgur.com/YO65mRC.png)
 
-![About Screen](https://imgur.com/Ypt8G2U.jpg)
+![About Screen](https://imgur.com/gCBTg18.png)
 
 ### How to Install
 
