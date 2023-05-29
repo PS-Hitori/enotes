@@ -21,7 +21,7 @@ eNotes is a note-taking application built using the Flutter framework.
 
 To install eNotes on your Android device, follow these steps:
 
-- Go to the [Release tab](https://github.com/PS-Hitori/eNotes/releases).
+- Go to the [Release](https://github.com/PS-Hitori/eNotes/releases) tab.
 - Download the latest APK file from the assets section.
 - Once installed, you can launch eNotes and start using it right away.
 
