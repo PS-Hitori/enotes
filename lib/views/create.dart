@@ -3,7 +3,6 @@ import 'package:external_path/external_path.dart';
 import 'dart:io';
 import 'package:logger/logger.dart';
 import 'package:enotes/theme_handler.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class Create extends StatefulWidget {
   final String? note;
@@ -118,60 +117,62 @@ class CreateState extends State<Create> {
     BuildContext context,
     RefreshCallback refreshHomeScreen,
   ) async {
-    final status = await Permission.storage.status;
-    if (status.isGranted) {
-      final note = _noteController.text.trim();
-      final title = _titleController.text.trim();
-      if (note.isNotEmpty) {
-        if (note.length <= 255) {
-          // Add validation for note length
-          if (await _isNoteTitleExists(title)) {
-            _showOverwriteDialog(context, title, note);
-          } else {
-            _saveNoteToFile(title, note);
-          }
+    final note = _noteController.text.trim();
+    final title = _titleController.text.trim();
+    if (title.isNotEmpty && note.isNotEmpty) {
+      if (note.length <= 255) {
+        // Add validation for note length
+        if (await _isNoteTitleExists(title)) {
+          _showOverwriteDialog(context, title, note);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Description should not exceed 255 characters.',
-                style: TextStyle(fontFamily: 'Roboto'),
-              ),
-            ),
-          );
+          _saveNoteToFile(title, note);
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Please enter a note.',
-              style: TextStyle(fontFamily: 'Roboto'),
-            ),
-          ),
-        );
-      }
-    } else if (status.isPermanentlyDenied) {
-      final result = await Permission.storage.request();
-      if (result.isGranted) {
-        _checkAndSaveNote(context, refreshHomeScreen);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Storage permission required to save the note.',
-              style: TextStyle(fontFamily: 'Roboto'),
-            ),
-          ),
+      } else if (note.length >= 255) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text(
+                'Note Validation',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: const Text(
+                'Description should not exceed 255 characters.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('OK',
+                      style: TextStyle(color: Color(0xFFCC4F4F))),
+                ),
+              ],
+            );
+          },
         );
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Storage permission required to save the note.',
-            style: TextStyle(fontFamily: 'Roboto'),
-          ),
-        ),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(
+              'Note Validation',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: const Text('Fields cannot be empty.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('OK',
+                    style: TextStyle(color: Color(0xFFCC4F4F))),
+              ),
+            ],
+          );
+        },
       );
     }
   }

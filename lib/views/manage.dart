@@ -51,23 +51,51 @@ class _ManageNoteDialogState extends State<ManageNoteDialog> {
         _saveNoteToFile(updatedTitle, updatedDescription);
         Navigator.pop(context);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Description should not exceed 255 characters.',
-              style: TextStyle(fontFamily: 'Roboto'),
-            ),
-          ),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text(
+                'Note Validation',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: const Text(
+                'Description should not exceed 255 characters.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('OK',
+                      style: TextStyle(color: Color(0xFFCC4F4F))),
+                ),
+              ],
+            );
+          },
         );
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Please enter a title and description.',
-            style: TextStyle(fontFamily: 'Roboto'),
-          ),
-        ),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(
+              'Note Validation',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: const Text('Fields cannot be empty.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('OK',
+                    style: TextStyle(color: Color(0xFFCC4F4F))),
+              ),
+            ],
+          );
+        },
       );
     }
   }
