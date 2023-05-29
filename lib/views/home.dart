@@ -192,12 +192,14 @@ class HomeState extends State<Home> {
                 direction: DismissDirection.horizontal,
                 background: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  color: _isDarkMode ? Colors.green : Colors.green[100],
                   child: Icon(
                     Icons.edit,
                     color: _isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
                 secondaryBackground: Container(
+                  color: _isDarkMode ? Colors.red : Colors.red[100],
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Icon(
                     Icons.delete,
