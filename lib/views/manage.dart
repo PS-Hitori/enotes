@@ -6,11 +6,13 @@ import 'package:logger/logger.dart';
 
 class ManageNoteDialog extends StatefulWidget {
   final Note note;
-  final void Function(String, String) onSave;
+  final String originalDescription;
+  final void Function(String title, String description) onSave;
   final void Function() refreshNotes;
   const ManageNoteDialog(
       {Key? key,
       required this.note,
+      required this.originalDescription,
       required this.onSave,
       required this.refreshNotes})
       : super(key: key);
@@ -28,7 +30,8 @@ class _ManageNoteDialogState extends State<ManageNoteDialog> {
     super.initState();
 
     _titleController.text = widget.note.title;
-    _descriptionController.text = widget.note.description;
+    _descriptionController.text =
+        widget.originalDescription.replaceAll('<br>', '\n');
   }
 
   @override
@@ -43,9 +46,20 @@ class _ManageNoteDialogState extends State<ManageNoteDialog> {
     String updatedDescription = _descriptionController.text.trim();
 
     if (updatedTitle.isNotEmpty && updatedDescription.isNotEmpty) {
-      widget.onSave(updatedTitle, updatedDescription);
-      _saveNoteToFile(updatedTitle, updatedDescription);
-      Navigator.pop(context);
+      if (updatedDescription.length <= 255) {
+        widget.onSave(updatedTitle, updatedDescription);
+        _saveNoteToFile(updatedTitle, updatedDescription);
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Description should not exceed 255 characters.',
+              style: TextStyle(fontFamily: 'Roboto'),
+            ),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

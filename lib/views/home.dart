@@ -110,8 +110,6 @@ class HomeState extends State<Home> {
                     context,
                     MaterialPageRoute(builder: (context) => const About()),
                   );
-                } else if (value == 'refresh') {
-                  _loadNotesFromDirectory();
                 } else if (value == 'theme') {
                   _showDarkModeDialog();
                 }
@@ -124,15 +122,6 @@ class HomeState extends State<Home> {
                       color: _isDarkMode ? Colors.white : Colors.black,
                     ),
                     child: const Text('Theme'),
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'refresh',
-                  child: DefaultTextStyle(
-                    style: TextStyle(
-                      color: _isDarkMode ? Colors.white : Colors.black,
-                    ),
-                    child: const Text('Refresh'),
                   ),
                 ),
                 PopupMenuItem(
@@ -357,11 +346,22 @@ class HomeState extends State<Home> {
   }
 
   String _extractDescriptionFromContent(String content) {
-    final lines = content.split('\n');
-    if (lines.isNotEmpty) {
-      return lines.first.trim();
+    const int maxDescriptionLength = 256;
+
+    String description = content.replaceAll(RegExp(r'\n'), ' ').trim();
+
+    if (description.length > maxDescriptionLength) {
+      description = description.substring(0, maxDescriptionLength);
+      final lastWordIndex = description.lastIndexOf(' ');
+
+      if (lastWordIndex != -1) {
+        description = description.substring(0, lastWordIndex);
+      }
+
+      description += '...';
     }
-    return '';
+
+    return description;
   }
 
   void _deleteNote(String noteTitle) async {
@@ -532,9 +532,9 @@ class HomeState extends State<Home> {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel',
+              child: const Text('Cancel',
                   style: TextStyle(
-                    color: _isDarkMode ? Colors.white : Colors.black,
+                    color: Color(0xFFCC4F4F),
                   )),
             ),
             TextButton(
@@ -545,9 +545,9 @@ class HomeState extends State<Home> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text('Save',
+              child: const Text('Save',
                   style: TextStyle(
-                    color: _isDarkMode ? Colors.white : Colors.black,
+                    color: Color(0xFFCC4F4F),
                   )),
             ),
           ],
@@ -562,6 +562,7 @@ class HomeState extends State<Home> {
       builder: (BuildContext context) {
         return ManageNoteDialog(
           note: note,
+          originalDescription: note.description,
           onSave: (String title, String description) {},
           refreshNotes: () {
             _loadNotesFromDirectory();

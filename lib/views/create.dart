@@ -123,10 +123,22 @@ class CreateState extends State<Create> {
       final note = _noteController.text.trim();
       final title = _titleController.text.trim();
       if (note.isNotEmpty) {
-        if (await _isNoteTitleExists(title)) {
-          _showOverwriteDialog(context, title, note);
+        if (note.length <= 255) {
+          // Add validation for note length
+          if (await _isNoteTitleExists(title)) {
+            _showOverwriteDialog(context, title, note);
+          } else {
+            _saveNoteToFile(title, note);
+          }
         } else {
-          _saveNoteToFile(title, note);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Description should not exceed 255 characters.',
+                style: TextStyle(fontFamily: 'Roboto'),
+              ),
+            ),
+          );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

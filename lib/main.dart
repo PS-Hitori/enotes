@@ -46,39 +46,46 @@ class _MainAppState extends State<MainApp> {
               body: Center(),
             ),
           );
-        } else if (snapshot.data == PermissionStatus.granted) {
-          return MaterialApp(
-            home: SplashPage(),
-            theme: _themeData,
-          );
         } else {
-          return MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Storage Permission Required',
-                      style: TextStyle(fontSize: 20, fontFamily: 'Roboto'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        requestPermissions();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFCC4F4F),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.0),
-                        ),
+          if (snapshot.data == PermissionStatus.granted) {
+            return MaterialApp(
+              home: SplashPage(),
+              theme: _themeData,
+            );
+          } else {
+            return MaterialApp(
+              home: Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'eNotes need permission on storage to enable saving on device.',
+                        style: TextStyle(fontSize: 20, fontFamily: 'Roboto'),
+                        textAlign: TextAlign.center,
                       ),
-                      child: const Text('Enable Permission'),
-                    ),
-                  ],
+                      ElevatedButton(
+                        onPressed: () {
+                          requestPermissions().then((status) {
+                            setState(() {
+                              _permissionStatus = Future.value(status);
+                            });
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFCC4F4F),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                        ),
+                        child: const Text('Enable Permission'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
+            );
+          }
         }
       },
     );
