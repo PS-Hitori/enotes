@@ -30,7 +30,7 @@ class About extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/icons/logo.png',
+              'assets/icons/app_logo.png',
               width: 128,
               height: 128,
             ),

@@ -46,7 +46,7 @@ class _SplashPageState extends State<SplashPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Image.asset(
-                'assets/icons/logo.png',
+                'assets/icons/app_logo.png',
                 width: 150,
                 height: 150,
               ),
