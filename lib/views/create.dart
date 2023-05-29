@@ -55,16 +55,15 @@ class CreateState extends State<Create> {
             const Text(
               'Add New Note',
               style: TextStyle(
-                fontFamily: 'Roboto',
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             TextField(
               controller: _titleController,
+              cursorColor: const Color(0xFFCC4F4F),
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: Theme.of(context).textTheme.bodyMedium!.color,
-                    fontFamily: 'Roboto',
                   ),
               decoration: const InputDecoration(
                 hintText: 'Title',
@@ -79,10 +78,10 @@ class CreateState extends State<Create> {
             Expanded(
               child: SingleChildScrollView(
                 child: TextField(
+                  cursorColor: const Color(0xFFCC4F4F),
                   controller: _noteController,
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                         color: Theme.of(context).textTheme.bodyMedium!.color,
-                        fontFamily: 'Roboto',
                       ),
                   maxLines: null,
                   decoration: const InputDecoration(
@@ -106,7 +105,6 @@ class CreateState extends State<Create> {
                 'Save Note',
                 style: TextStyle(
                   color: Colors.white,
-                  fontFamily: 'Roboto',
                 ),
               ),
             ),
@@ -215,57 +213,20 @@ class CreateState extends State<Create> {
     }
   }
 
-  Future<void> _writeNoteToFile(String note) async {
-    final directory = await ExternalPath.getExternalStoragePublicDirectory(
-      ExternalPath.DIRECTORY_DOCUMENTS,
-    );
-    final notesDirectory = Directory('$directory/eNotes/Notes');
-    if (!await notesDirectory.exists()) {
-      await notesDirectory.create(recursive: true);
-    }
-
-    final title = _titleController.text.trim();
-    final fileName = '$title.txt';
-    final file = File('${notesDirectory.path}/$fileName');
-
-    try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Note saved successfully.',
-            style: TextStyle(fontFamily: 'Roboto'),
-          ),
-        ),
-      );
-      await file.writeAsString(note);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Failed to save note.',
-            style: TextStyle(fontFamily: 'Roboto'),
-          ),
-        ),
-      );
-      Logger().e(e);
-    }
-  }
-
   void _showOverwriteDialog(BuildContext context, String title, String note) {
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevents closing on outside tap
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return WillPopScope(
           onWillPop: () async {
-            return false; // Disable back button press
+            return false;
           },
           child: AlertDialog(
             title: Text(
               'Note Already Exists',
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: Theme.of(context).textTheme.bodyMedium!.color,
-                    fontFamily: 'Roboto',
                     fontWeight: FontWeight.bold,
                   ),
             ),
@@ -273,7 +234,6 @@ class CreateState extends State<Create> {
               'A note with the same title already exists. Do you want to overwrite it?',
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: Theme.of(context).textTheme.bodyMedium!.color,
-                    fontFamily: 'Roboto',
                     fontWeight: FontWeight.normal,
                   ),
             ),
@@ -285,8 +245,7 @@ class CreateState extends State<Create> {
                 },
                 child: const Text(
                   'Overwrite',
-                  style:
-                      TextStyle(fontFamily: 'Roboto', color: Color(0xFFCC4F4F)),
+                  style: TextStyle(color: Color(0xFFCC4F4F)),
                 ),
               ),
               TextButton(
@@ -295,8 +254,7 @@ class CreateState extends State<Create> {
                 },
                 child: const Text(
                   'Cancel',
-                  style:
-                      TextStyle(fontFamily: 'Roboto', color: Color(0xFFCC4F4F)),
+                  style: TextStyle(color: Color(0xFFCC4F4F)),
                 ),
               ),
             ],

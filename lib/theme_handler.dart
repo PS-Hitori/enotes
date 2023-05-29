@@ -1,4 +1,4 @@
-import 'package:enotes/views/splash.dart';
+import 'package:enotes/views/home.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,52 +7,110 @@ class ThemeHandler {
       GlobalKey<NavigatorState>();
 
   static final ThemeData lightTheme = ThemeData.light().copyWith(
-    scaffoldBackgroundColor: Colors.white,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black,
-    ),
-    textTheme: const TextTheme(
-      titleLarge: TextStyle(
-        color: Colors.black,
-        fontSize: 20,
-        fontFamily: 'Roboto',
+      scaffoldBackgroundColor: Colors.white,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
-      bodyMedium: TextStyle(
-        color: Colors.black,
-        fontSize: 16,
-        fontFamily: 'Roboto',
+      listTileTheme: const ListTileThemeData(
+        textColor: Colors.black,
       ),
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Color(0xFFCC4F4F),
-      foregroundColor: Colors.white,
-    ),
-  );
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.black,
+        ),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        labelStyle: TextStyle(
+          color: Colors.black,
+          fontFamily: 'Roboto',
+        ),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: MaterialStateProperty.all(const Color(0xFFCC4F4F)),
+      ),
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(
+          color: Colors.black,
+          fontSize: 20,
+          fontFamily: 'Roboto',
+        ),
+        bodyMedium: TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+          fontFamily: 'Roboto',
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Color(0xFFCC4F4F),
+        foregroundColor: Colors.white,
+      ),
+      dialogTheme: const DialogTheme(
+        backgroundColor: Colors.white,
+        titleTextStyle: TextStyle(
+          color: Colors.black,
+          fontSize: 20,
+          fontFamily: 'Roboto',
+        ),
+        contentTextStyle: TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+          fontFamily: 'Roboto',
+        ),
+      ));
 
   static final ThemeData darkTheme = ThemeData.dark().copyWith(
-    scaffoldBackgroundColor: const Color(0xFF1A1D21),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1A1D21),
-      foregroundColor: Colors.white,
-    ),
-    textTheme: const TextTheme(
-      titleLarge: TextStyle(
-        color: Colors.white,
-        fontSize: 20,
-        fontFamily: 'Roboto',
+      scaffoldBackgroundColor: const Color(0xFF1A1D21),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF1A1D21),
+        foregroundColor: Colors.white,
       ),
-      bodyMedium: TextStyle(
-        color: Colors.white,
-        fontSize: 16,
-        fontFamily: 'Roboto',
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.white,
+        ),
       ),
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Color(0xFFCC4F4F),
-      foregroundColor: Colors.white,
-    ),
-  );
+      inputDecorationTheme: const InputDecorationTheme(
+        labelStyle: TextStyle(
+          color: Colors.white,
+          fontFamily: 'Roboto',
+        ),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: MaterialStateProperty.all(const Color(0xFFCC4F4F)),
+      ),
+      listTileTheme: const ListTileThemeData(
+        textColor: Colors.white,
+      ),
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontFamily: 'Roboto',
+        ),
+        bodyMedium: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontFamily: 'Roboto',
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Color(0xFFCC4F4F),
+        foregroundColor: Colors.white,
+      ),
+      dialogTheme: const DialogTheme(
+        backgroundColor: Color(0xFF1A1D21),
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontFamily: 'Roboto',
+        ),
+        contentTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontFamily: 'Roboto',
+        ),
+      ));
 
   static Future<void> initializeTheme() async {
     final prefs = await SharedPreferences.getInstance();
@@ -112,7 +170,7 @@ class ThemeHandler {
     runApp(
       MaterialApp(
         theme: newTheme,
-        home: SplashPage(),
+        home: Home(),
       ),
     );
   }

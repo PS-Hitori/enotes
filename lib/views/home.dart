@@ -6,10 +6,11 @@ import 'dart:io';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:enotes/theme_handler.dart';
+import 'package:enotes/views/manage.dart';
 
 class Note {
-  final String title;
-  final String description;
+  String title;
+  String description;
   final DateTime creationTime;
 
   @override
@@ -81,7 +82,6 @@ class HomeState extends State<Home> {
                     cursorColor: const Color(0xFFCC4F4F),
                     style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                           color: Theme.of(context).textTheme.bodyMedium!.color,
-                          fontFamily: 'Roboto',
                         ),
                     decoration: InputDecoration(
                       hintText: 'Search your notes',
@@ -101,22 +101,6 @@ class HomeState extends State<Home> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: IconButton(
-                icon: Icon(
-                  _isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
-                  color: _isDarkMode ? Colors.white : Colors.black,
-                ),
-                onPressed: () {
-                  final newMode = !_isDarkMode;
-                  ThemeHandler.toggleDarkMode(newMode);
-                  setState(() {
-                    _isDarkMode = newMode;
-                  });
-                },
-              ),
-            ),
             PopupMenuButton(
               onSelected: (value) {
                 if (value == 'remove_all') {
@@ -128,9 +112,20 @@ class HomeState extends State<Home> {
                   );
                 } else if (value == 'refresh') {
                   _loadNotesFromDirectory();
+                } else if (value == 'theme') {
+                  _showDarkModeDialog();
                 }
               },
               itemBuilder: (BuildContext context) => [
+                PopupMenuItem(
+                  value: 'theme',
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      color: _isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    child: const Text('Theme'),
+                  ),
+                ),
                 PopupMenuItem(
                   value: 'refresh',
                   child: DefaultTextStyle(
@@ -179,13 +174,12 @@ class HomeState extends State<Home> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.note_rounded,
-                  size: 80, color: _isDarkMode ? Colors.white : Colors.black),
+              Icon(Icons.event_note_outlined,
+                  size: 48, color: _isDarkMode ? Colors.white : Colors.black),
               const SizedBox(height: 10),
-              Text('You have no notes yet.',
+              Text('No notes found',
                   style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'Roboto',
+                      fontSize: 12,
                       color: _isDarkMode ? Colors.white : Colors.black))
             ],
           ))
@@ -199,52 +193,68 @@ class HomeState extends State<Home> {
                 background: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Icon(
+                    Icons.edit,
+                    color: _isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+                secondaryBackground: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Icon(
                     Icons.delete,
                     color: _isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
                 confirmDismiss: (direction) async {
-                  return await showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Delete Note',
-                            style: TextStyle(fontFamily: 'Roboto')),
-                        content: Text(
-                            'Are you sure you want to delete this note?',
-                            style: TextStyle(
-                                color:
-                                    _isDarkMode ? Colors.white : Colors.black,
-                                fontFamily: 'Roboto')),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFFCC4F4F)),
-                            child: const Text('Cancel',
-                                style: TextStyle(fontFamily: 'Roboto')),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              _deleteNote(note.title);
-                              Navigator.of(context).pop(true);
-                            },
-                            style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFFCC4F4F)),
-                            child: const Text('Delete',
-                                style: TextStyle(fontFamily: 'Roboto')),
-                          ),
-                        ],
-                      );
-                    },
-                  );
+                  if (direction == DismissDirection.startToEnd) {
+                    openManageNoteDialog(note);
+                    return false; // Do not dismiss
+                  } else if (direction == DismissDirection.endToStart) {
+                    // Delete action
+                    return await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Delete Note',
+                              style: TextStyle(fontFamily: 'Roboto')),
+                          content: Text(
+                              'Are you sure you want to delete this note?',
+                              style: TextStyle(
+                                  color:
+                                      _isDarkMode ? Colors.white : Colors.black,
+                                  fontFamily: 'Roboto')),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFFCC4F4F)),
+                              child: const Text('Cancel',
+                                  style: TextStyle(fontFamily: 'Roboto')),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                _deleteNote(note.title);
+                                Navigator.of(context).pop(true);
+                              },
+                              style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFFCC4F4F)),
+                              child: const Text('Delete',
+                                  style: TextStyle(fontFamily: 'Roboto')),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                  return false; // Default: Do not dismiss
                 },
                 onDismissed: (direction) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Note deleted'),
-                    ),
-                  );
+                  if (direction == DismissDirection.endToStart) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Note deleted'),
+                      ),
+                    );
+                  }
                 },
                 child: Card(
                   elevation: 0.0,
@@ -260,7 +270,6 @@ class HomeState extends State<Home> {
                         note.title,
                         style: TextStyle(
                           color: _isDarkMode ? Colors.white : Colors.black,
-                          fontFamily: 'Roboto',
                           fontSize: 20.0,
                           fontWeight: FontWeight.bold,
                         ),
@@ -268,7 +277,6 @@ class HomeState extends State<Home> {
                       subtitle: Text(note.description,
                           style: TextStyle(
                             color: _isDarkMode ? Colors.white : Colors.black,
-                            fontFamily: 'Roboto',
                             fontSize: 14.0,
                           )),
                     ),
@@ -461,6 +469,101 @@ class HomeState extends State<Home> {
       builder: (BuildContext context) {
         return Create(
           refreshNotes: _loadNotesFromDirectory,
+        );
+      },
+    ).then((_) {
+      _loadNotesFromDirectory();
+    });
+  }
+
+  void _showDarkModeDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        bool isDarkMode = _isDarkMode;
+
+        return AlertDialog(
+          title: const Text('Theme'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  ListTile(
+                    title: Text(
+                      'Dark',
+                      style: TextStyle(
+                        color: _isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    leading: Radio<bool>(
+                      value: true,
+                      groupValue: isDarkMode,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          isDarkMode = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                      'Light',
+                      style: TextStyle(
+                        color: _isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    leading: Radio<bool>(
+                      value: false,
+                      groupValue: isDarkMode,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          isDarkMode = value!;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel',
+                  style: TextStyle(
+                    color: _isDarkMode ? Colors.white : Colors.black,
+                  )),
+            ),
+            TextButton(
+              onPressed: () {
+                ThemeHandler.toggleDarkMode(isDarkMode);
+                setState(() {
+                  _isDarkMode = isDarkMode;
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Save',
+                  style: TextStyle(
+                    color: _isDarkMode ? Colors.white : Colors.black,
+                  )),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void openManageNoteDialog(Note note) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ManageNoteDialog(
+          note: note,
+          onSave: (String title, String description) {},
+          refreshNotes: () {
+            _loadNotesFromDirectory();
+          },
         );
       },
     ).then((_) {
